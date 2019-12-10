@@ -121,14 +121,6 @@ static void game_over_display(void)
 	// display score
 }
 
-static void you_win_display(void)
-{
-	
-	lcd_clear_screen(LCD_COLOR_BLACK);
-	lcd_draw_image(CENTER_X, you_win_width, CENTER_Y, you_win_height, you_win_bitmap, LCD_COLOR_ORANGE, LCD_COLOR_BLACK);
-	
-}
-
 static void wizard_teleport(int knight_x, int knight_y, int old_x, int old_y, bool shield)
 {
 	if(shield) {
@@ -275,7 +267,6 @@ static void write_eeprom_name(void) {
   uint8_t valuesK[13] = "Kshitij Wavre";
   uint8_t read_val;
   char msg[80];
-  bool status = true;
   
   sprintf(msg, "write EEPROM\n\r");
   put_string(msg);
@@ -299,11 +290,10 @@ static void read_eeprom_name(void) {
   uint16_t addr;
   uint16_t addr1 = addrD;
   uint16_t addr2 = addrK;
-  uint8_t valuesD[14];
-  uint8_t valuesK[15];
+  uint8_t valuesD[12];
+  uint8_t valuesK[13];
   uint8_t read_val;
   char msg[80];
-  bool status = true;
   
   sprintf(msg, "read EEPROM\n\r");
   put_string(msg);
@@ -313,7 +303,7 @@ static void read_eeprom_name(void) {
 		sprintf(msg, "%c",valuesD[addr-addr1]);
     put_string(msg);
   }
-  sprintf(msg, "\nDone 1st read\n\n\r");
+  sprintf(msg, "\n\rDone 1st read\n\n\r");
   put_string(msg);
 
   for(addr = addr2; addr <(addr2+13); addr++)
@@ -323,12 +313,22 @@ static void read_eeprom_name(void) {
     put_string(msg);
   }
 	
-	sprintf(msg, "\nDone 2nd read\n\n\r");
+	sprintf(msg, "\n\rDone 2nd read\n\n\r");
   put_string(msg);
 
 }
 
+static void writeHighScore(uint8_t Highscore) {
+      eeprom_byte_write(EEPROM_I2C_BASE,addrHIghScore, Highscore);
+}
 
+static void readHighScore() {
+	uint8_t Highscore;
+	char msg[80];
+    eeprom_byte_read(EEPROM_I2C_BASE,addrHIghScore, &Highscore);
+	sprintf(msg, "prev high score = %i \n\r", Highscore);
+	put_string(msg);
+}
 //*****************************************************************************
 //*****************************************************************************
 int 
@@ -342,6 +342,7 @@ main(void)
 	uint32_t player_score = 0;
 	// this will use EEPROM
 	uint32_t high_score = 0;
+	uint32_t prev_high_score = 0;
 	int i;
 	int knight_x = CENTER_X;
 	int knight_y = LOWER_Y;
@@ -358,7 +359,6 @@ main(void)
 	int knight_collide_x = 0;
 	int knight_collide_y = 0;
 	int dragon_tick = 0;
-	int boss_health = 8;
 	bool isUpPressed = false;
 	bool move = false;
 	bool red_dead = false;
@@ -379,7 +379,7 @@ main(void)
 	
 	initialize_serial_debug();
 	initialize_hardware();
-	
+	writeHighScore(100);
 	lcd_init_menu();
 	
 	while(in_menu) {
@@ -477,21 +477,8 @@ main(void)
 					
 					}
 				} else {
-					
-					red_dragon_x = CENTER_X;
-					red_dragon_y = UPPER_Y;
-					
-					collide_x = abs(shot_x - red_dragon_x);
-					collide_y = abs(shot_y - red_dragon_y);
-					
-					if(((collide_x < 60) && (collide_y < 60))) {
-						shot_clear(shot_x, shot_y);
-						lcd_boss_battle(CENTER_X, UPPER_Y);
-						wizard_shot = false;
-						player_score += 1;
-						boss_health -= 1;
-					}
-					
+					sprintf(msg, "IN BOSS BATTLE \n\r");
+					put_string(msg);
 				}
 				
 			}
@@ -635,7 +622,10 @@ main(void)
 			if(!boss_battle) {
 				repaint_dragons();
 			}
-						
+				
+			//sprintf(msg, "SCORE: %d\n\r", player_score);
+			//put_string(msg);
+			
 			if((player_score > 5) && !boss_battle) {
 				boss_battle = true;
 				// get LCD ready for boss
@@ -646,52 +636,18 @@ main(void)
 			
 			if(boss_battle) {
 				// controls LEDs 
-				//io_expander_write_reg(MCP23017_GPIOA_R, 0xFF);
-				switch(boss_health) {
-					case 8:
-						io_expander_write_reg(MCP23017_GPIOA_R, 0xFF);
-						break;
-					case 7:
-						io_expander_write_reg(MCP23017_GPIOA_R, 0x7F);
-						break;
-					case 6:
-						io_expander_write_reg(MCP23017_GPIOA_R, 0x3F);
-						break;
-					case 5:
-						io_expander_write_reg(MCP23017_GPIOA_R, 0x1F);
-						break;
-					case 4:
-						io_expander_write_reg(MCP23017_GPIOA_R, 0x0F);
-						break;
-					case 3:
-						io_expander_write_reg(MCP23017_GPIOA_R, 0x07);
-						break;
-					case 2:
-						io_expander_write_reg(MCP23017_GPIOA_R, 0x03);
-						break;
-					case 1:
-						io_expander_write_reg(MCP23017_GPIOA_R, 0x01);
-						break;
-					case 0:
-						io_expander_write_reg(MCP23017_GPIOA_R, 0x00);
-						break;
-					default:
-						io_expander_write_reg(MCP23017_GPIOA_R, 0x00);
-						break;
-				}
 				
-				if(boss_health == 0) {
-					//display you win!
-					you_win_display();
-					break;
-				}
 				
 			}
+
 			if (U) {
+				sprintf(msg, "UP PRESSED \n\r");
+				put_string(msg);
 				U = false;
 				io_expander_read_reg(MCP23017_GPIOB_R);
 			} else if (D) {
 				D = false;
+				readHighScore();
 				io_expander_read_reg(MCP23017_GPIOB_R);
 			} else if (L) {
 				write_eeprom_name();
