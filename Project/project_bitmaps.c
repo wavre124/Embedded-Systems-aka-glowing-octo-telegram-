@@ -636,7 +636,7 @@ const uint8_t wizard_height = 36;
 
 const uint8_t small_dragon_bitmap[] =
 {
-	0x00, 0x00, 0x00, 0x07, //                              ###
+	0x00, 0x00, 0x00, 0x00, //                              
 	0xE0, 0x00, 0x00, 0x7F, // ###                      #######
 	0x78, 0x00, 0x01, 0xFC, //  ####                  #######  
 	0x78, 0x00, 0x07, 0xF8, //  ####                ########   

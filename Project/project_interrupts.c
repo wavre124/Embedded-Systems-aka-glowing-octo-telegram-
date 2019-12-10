@@ -26,6 +26,8 @@
 volatile Directions joy_dir;
 volatile bool SW1_Pressed = false;
 volatile bool timer_tick = false;
+volatile bool mv_dragons = false;
+volatile bool boss_fire = false;
 volatile bool left = false;
 volatile bool right = false;
 volatile bool up = false;
@@ -45,6 +47,18 @@ void TIMER4A_Handler(void)
 	static int count = 0;
 	
 	count++;
+	
+	if(!(count % 5)) {
+		mv_dragons = true;
+	} else {
+		mv_dragons = false;
+	}
+	
+	if(!(count % 100)) {
+		boss_fire = true;
+	} else {
+		boss_fire = false;
+	}
 	
 	if(count >= 200) {
 		timer_tick = true;
