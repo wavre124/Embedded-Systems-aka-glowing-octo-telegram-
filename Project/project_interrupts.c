@@ -25,6 +25,7 @@
 
 volatile Directions joy_dir;
 volatile bool SW1_Pressed = false;
+volatile bool timer_tick = false;
 volatile bool left = false;
 volatile bool right = false;
 volatile bool up = false;
@@ -42,15 +43,16 @@ volatile bool L = false;
 void TIMER4A_Handler(void)
 {
 	static int count = 0;
-	if (!lp_io_read_pin(SW1_BIT)) {
-		count++;
-	} else {
+	
+	count++;
+	
+	if(count >= 200) {
+		timer_tick = true;
 		count = 0;
+	} else {
+		timer_tick = false;
 	}
 	
-	if (count >= 7) {
-		SW1_Pressed = true;
-	}
 	TIMER4->ICR = TIMER_ICR_TATOCINT;
 }
 
@@ -148,10 +150,6 @@ void GPIOF_Handler(void){
 	io_expander_read_reg(MCP23017_GPIOB_R);
 	GPIOF->ICR |= PF0;
 }
-
-
-
-
 
 
 

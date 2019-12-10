@@ -61,3 +61,20 @@ uint8_t io_expander_read_reg(uint8_t reg) {
 	
   return data;
 }
+
+bool io_read_top_btn() {
+	
+	bool isPressed;
+	
+	uint8_t top_btn_data = io_expander_read_reg(MCP23017_GPIOB_R);
+	
+	uint8_t press_data = top_btn_data & 0x1;
+	
+	if(press_data == 1){
+		isPressed = false;
+	} else {
+		isPressed = true;
+	}
+	
+	return isPressed;
+}

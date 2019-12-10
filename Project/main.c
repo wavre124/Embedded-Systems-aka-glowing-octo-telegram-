@@ -65,28 +65,35 @@ static void lcd_init_menu(void)
 	lcd_display_menu_options();
 }
 
+static void lcd_boss_battle(int boss_x, int boss_y)
+{
+	
+	lcd_draw_image(boss_x, menu_dragon_width, boss_y, menu_dragon_height, menu_dragon, LCD_COLOR_RED, LCD_COLOR_WHITE);
+	
+}
+
 static void lcd_init_level(void)
 {
 	int i;
 	
-	lcd_clear_screen(LCD_COLOR_GRAY);
+	lcd_clear_screen(LCD_COLOR_WHITE);
 		
 	for(i = 0; i < 5; i++) {
-		lcd_draw_image(dragons[i].start_x_loc, small_dragon_width, dragons[i].start_y_loc, small_dragon_height, small_dragon_bitmap, LCD_COLOR_RED, LCD_COLOR_GRAY);
+		lcd_draw_image(dragons[i].start_x_loc, small_dragon_width, dragons[i].start_y_loc, small_dragon_height, small_dragon_bitmap, LCD_COLOR_RED, LCD_COLOR_WHITE);
 	}
 	
-	lcd_draw_image(CENTER_X, wizard_width, LOWER_Y, wizard_height, wizard_bitmap, LCD_COLOR_BROWN, LCD_COLOR_GRAY);
+	lcd_draw_image(CENTER_X, wizard_width, LOWER_Y, wizard_height, wizard_bitmap, LCD_COLOR_BROWN, LCD_COLOR_WHITE);
 }
 
 static void lcd_redraw_field(int knight_x, int knight_y, int old_x, int old_y, bool shield)
 {
 	if(shield) {
-		lcd_clear_image_move(old_x, wizard_width + shield_width + 5, old_y, wizard_height + 5 + shield_height, LCD_COLOR_GRAY);
-		lcd_draw_image(knight_x, wizard_width, knight_y, wizard_height, wizard_bitmap, LCD_COLOR_BROWN, LCD_COLOR_GRAY);
-		lcd_draw_image(knight_x, shield_width, knight_y - 25, shield_height, shield_bitmap, LCD_COLOR_BLUE2, LCD_COLOR_GRAY);
+		lcd_clear_image_move(old_x, wizard_width + shield_width + 5, old_y, wizard_height + 5 + shield_height, LCD_COLOR_WHITE);
+		lcd_draw_image(knight_x, wizard_width, knight_y, wizard_height, wizard_bitmap, LCD_COLOR_BROWN, LCD_COLOR_WHITE);
+		lcd_draw_image(knight_x, shield_width, knight_y - 25, shield_height, shield_bitmap, LCD_COLOR_BLUE2, LCD_COLOR_WHITE);
 	} else {
-		lcd_clear_image_move(old_x, wizard_width, old_y, wizard_height + 5, LCD_COLOR_GRAY);
-		lcd_draw_image(knight_x, wizard_width, knight_y, wizard_height, wizard_bitmap, LCD_COLOR_BROWN, LCD_COLOR_GRAY);
+		lcd_clear_image_move(old_x, wizard_width, old_y, wizard_height + 5, LCD_COLOR_WHITE);
+		lcd_draw_image(knight_x, wizard_width, knight_y, wizard_height, wizard_bitmap, LCD_COLOR_BROWN, LCD_COLOR_WHITE);
 	}
 	
 }
@@ -104,41 +111,61 @@ static void lcd_high_score(void)
 	
 }
 
+static void game_over_display(void)
+{
+	lcd_clear_screen(LCD_COLOR_BLACK);
+	// derpy dragon
+	lcd_draw_image(CENTER_X, dragon_bitmap_width, UPPER_Y, dragon_bitmap_height, dragon_bitmap, LCD_COLOR_RED, LCD_COLOR_BLACK);
+	// game over
+	lcd_draw_image(CENTER_X, game_over_width, CENTER_Y, game_over_height, game_over_bitmap, LCD_COLOR_ORANGE, LCD_COLOR_BLACK);
+	// display score
+}
+
 static void wizard_teleport(int knight_x, int knight_y, int old_x, int old_y, bool shield)
 {
 	if(shield) {
-		lcd_draw_rectangle(old_x, wizard_width + shield_width + 5, old_y, wizard_height + 5 + shield_height, LCD_COLOR_GRAY);
-		lcd_draw_image(knight_x, wizard_width, knight_y, wizard_height, wizard_bitmap, LCD_COLOR_BROWN, LCD_COLOR_GRAY);
-		lcd_draw_image(knight_x, shield_width, knight_y - 25, shield_height, shield_bitmap, LCD_COLOR_BLUE2, LCD_COLOR_GRAY);
+		lcd_draw_rectangle(old_x, wizard_width + shield_width + 5, old_y, wizard_height + 5 + shield_height, LCD_COLOR_WHITE);
+		lcd_draw_image(knight_x, wizard_width, knight_y, wizard_height, wizard_bitmap, LCD_COLOR_BROWN, LCD_COLOR_WHITE);
+		lcd_draw_image(knight_x, shield_width, knight_y - 25, shield_height, shield_bitmap, LCD_COLOR_BLUE2, LCD_COLOR_WHITE);
 	} else {
-		lcd_draw_rectangle(old_x, wizard_width, old_y, wizard_height + 5, LCD_COLOR_GRAY);
-		lcd_draw_image(knight_x, wizard_width, knight_y, wizard_height, wizard_bitmap, LCD_COLOR_BROWN, LCD_COLOR_GRAY);
+		lcd_draw_rectangle(old_x, wizard_width, old_y, wizard_height + 5, LCD_COLOR_WHITE);
+		lcd_draw_image(knight_x, wizard_width, knight_y, wizard_height, wizard_bitmap, LCD_COLOR_BROWN, LCD_COLOR_WHITE);
 	}
 }
 
 static void red_dragon_dissapear(int drago_x, int drago_y)
 {
-	lcd_draw_rectangle(drago_x, dragon_bitmap_width, drago_y, dragon_bitmap_height, LCD_COLOR_GRAY);
+	lcd_draw_rectangle(drago_x, dragon_bitmap_width, drago_y, dragon_bitmap_height, LCD_COLOR_WHITE);
 }
 
 static void shield_triggered(int knight_x, int knight_y)
 {
-	lcd_draw_image(knight_x, shield_width, knight_y - 25, shield_height, shield_bitmap, LCD_COLOR_BLUE2, LCD_COLOR_GRAY);
+	lcd_draw_image(knight_x, shield_width, knight_y - 25, shield_height, shield_bitmap, LCD_COLOR_BLUE2, LCD_COLOR_WHITE);
 }
 
 static void shield_lowered(int knight_x, int knight_y)
 {
-	lcd_draw_rectangle(knight_x, shield_width + 5, knight_y - 25, shield_height, LCD_COLOR_GRAY);
+	lcd_draw_rectangle(knight_x, shield_width + 5, knight_y - 25, shield_height, LCD_COLOR_WHITE);
 }
 
 static void wizard_spell(int shot_x, int shot_y)
 {
-	lcd_draw_image(shot_x, blue_orb_width, shot_y, blue_orb_height, blue_orb_bitmap, LCD_COLOR_BLUE2, LCD_COLOR_GRAY);
+	lcd_draw_image(shot_x, blue_orb_width, shot_y, blue_orb_height, blue_orb_bitmap, LCD_COLOR_BLUE2, LCD_COLOR_WHITE);
+}
+
+static void draw_fire_ball(int ball_x, int ball_y)
+{
+	lcd_draw_image(ball_x, fireball_width, ball_y, fireball_height, fireball_bitmap, LCD_COLOR_ORANGE, LCD_COLOR_WHITE);
 }
 
 static void shot_clear(int shot_x, int shot_y)
 {
-	lcd_draw_rectangle(shot_x, blue_orb_width, shot_y, blue_orb_height, LCD_COLOR_GRAY);
+	lcd_draw_rectangle(shot_x, blue_orb_width, shot_y, blue_orb_height, LCD_COLOR_WHITE);
+}
+
+static void fire_ball_clear(int ball_x, int ball_y)
+{
+	lcd_draw_rectangle(ball_x, fireball_width, ball_y, fireball_height + 10, LCD_COLOR_WHITE);
 }
 
 static void delay(void)
@@ -213,10 +240,21 @@ static void repaint_dragons(void)
 		
 		if(dragons[i].isHit && (dead_dragons > 3)) {
 			delay();
-			lcd_draw_image(dragons[i].start_x_loc, small_dragon_width, dragons[i].start_y_loc, small_dragon_height, small_dragon_bitmap, LCD_COLOR_RED, LCD_COLOR_GRAY);
+			lcd_draw_image(dragons[i].start_x_loc, small_dragon_width, dragons[i].start_y_loc, small_dragon_height, small_dragon_bitmap, LCD_COLOR_RED, LCD_COLOR_WHITE);
 			dragons[i].isHit = false;
 		}
 		
+	}
+	
+}
+
+static void clear_dragons(void)
+{
+	int i;
+	int dead_dragons = 0;
+	
+	for(i = 0; i < 5; i++) {
+		red_dragon_dissapear(dragons[i].x_loc, dragons[i].y_loc);
 	}
 	
 }
@@ -226,9 +264,9 @@ static void repaint_dragons(void)
 int 
 main(void)
 {
-	uint8_t data;	
+	
 	uint16_t t_x,t_y;
-  	uint8_t touch_event;
+  uint8_t touch_event;
 	int16_t accel_x, accel_y;
 	// this will be the user score
 	uint32_t player_score = 0;
@@ -243,8 +281,14 @@ main(void)
 	int red_dragon_y = 0;
 	int shot_x = 0;
 	int shot_y = 0;
+	int fire_x = 0;
+	int fire_y = 0;
 	int collide_x = 0;
 	int collide_y = 0;
+	int knight_collide_x = 0;
+	int knight_collide_y = 0;
+	int dragon_tick = 0;
+	bool isUpPressed = false;
 	bool move = false;
 	bool red_dead = false;
 	bool knight_reached_edge = false;
@@ -252,8 +296,10 @@ main(void)
 	bool move_left = false;
 	bool shield_raised = false;
 	bool wizard_shot = false;
+	bool fire_ball = false;
 	bool in_menu = false;
 	bool high_score_bool = false;
+	bool boss_battle = false;
 	char msg[80];
 	
 	init_dragons();
@@ -317,11 +363,12 @@ main(void)
 
     while(1)
 		{
+			io_expander_read_reg(MCP23017_GPIOB_R);
+			
 			old_k_x = knight_x;
 			old_k_y = knight_y;
 			
 			touch_event = ft6x06_read_td_status();
-			io_expander_read_reg(MCP23017_GPIOB_R);
 			
 			if(wizard_shot) {
 				shot_y -= 1;
@@ -332,28 +379,67 @@ main(void)
 					wizard_shot = false;
 				}
 				
+				if(!boss_battle) {
 				// loop through array of dragons and see if hit
-				for(i = 0; i < 5; i++) {
+					for(i = 0; i < 5; i++) {
 					
-					red_dragon_x = dragons[i].start_x_loc;
-					red_dragon_y = dragons[i].start_y_loc;
 					
-					collide_x = abs(shot_x - red_dragon_x);
-					collide_y = abs(shot_y - red_dragon_y);
-				
-					if((collide_x < 20) && (collide_y < 20)){
-						shot_clear(shot_x, shot_y);
-						red_dragon_dissapear(red_dragon_x, red_dragon_y);
-						wizard_shot = false;
-						red_dead = true;
-						red_dragon_x = 500;
-						red_dragon_y = 500;
-						// player score increments whenever this happens
-						player_score += 1;
-						dragons[i].isHit = true;
+						red_dragon_x = dragons[i].start_x_loc;
+						red_dragon_y = dragons[i].start_y_loc;
+					
+						
+						collide_x = abs(shot_x - red_dragon_x);
+						collide_y = abs(shot_y - red_dragon_y);
+					
+					
+						if(((collide_x < 20) && (collide_y < 20)) && !dragons[i].isHit) {
+							shot_clear(shot_x, shot_y);
+							red_dragon_dissapear(red_dragon_x, red_dragon_y);
+							wizard_shot = false;
+							red_dead = true;
+							red_dragon_x = 500;
+							red_dragon_y = 500;
+							// player score increments whenever this happens
+							player_score += 1;
+							dragons[i].isHit = true;
+						}
+					
 					}
-					
+				} else {
+					sprintf(msg, "IN BOSS BATTLE \n\r");
+					put_string(msg);
 				}
+				
+			}
+			
+			if(fire_ball) {
+				fire_y += 1;
+				draw_fire_ball(fire_x, fire_y);
+				
+				if(fire_y > 280) {
+					fire_ball_clear(fire_x, fire_y);
+					fire_ball = false;
+				}
+				
+				knight_collide_x = abs(fire_x - knight_x);
+				knight_collide_y = abs(fire_y - knight_y);
+				
+				if(((knight_collide_x < 20) && (knight_collide_y < 20)) && !shield_raised) {
+					//fire_ball_clear(fire_x, fire_y);
+					// display game over
+					delay();
+					game_over_display();
+					fire_ball = false;
+					break;
+				}
+				
+				if(((knight_collide_x < 50) && (knight_collide_y < 50)) && shield_raised) {
+					fire_ball_clear(fire_x, fire_y);
+					fire_ball = false;
+				} 
+				
+				
+				
 			}
 			
 			if(touch_event) {
@@ -429,7 +515,63 @@ main(void)
 				// do nothing
 			}
 			
+			if(U && !shield_raised){
+				//sprintf(msg, "WIZARD SPELL\n\r");
+				//put_string(msg);
+				//U = false;
+				// shot will be shot
+				shot_x = knight_x;
+				shot_y = knight_y - wizard_height - 9;
+				wizard_spell(shot_x, shot_y);
+				wizard_shot = true;
+			}
+			
+			if(timer_tick && !boss_battle) {
+				// one of the dragons will shoot a fireball
+				//sprintf(msg, "FIREBALL\n\r");
+				//put_string(msg);
+				// is this dangerous!?
+				timer_tick = false;
+				
+				// choose which dragon ends up shooting fireball
+				fire_x = dragons[dragon_tick].x_loc;
+				fire_y = dragons[dragon_tick].y_loc + 30;
+				
+				if(!dragons[dragon_tick].isHit) {
+					draw_fire_ball(fire_x, fire_y);
+					fire_ball = true;
+				}
+				
+				dragon_tick++;
+				if(dragon_tick == 5) {
+					dragon_tick = 0;
+				}
+			}
+			
+			if(!boss_battle) {
+				repaint_dragons();
+			}
+				
+			//sprintf(msg, "SCORE: %d\n\r", player_score);
+			//put_string(msg);
+			
+			if((player_score > 5) && !boss_battle) {
+				boss_battle = true;
+				// get LCD ready for boss
+				clear_dragons();
+				// draw boss
+				lcd_boss_battle(CENTER_X, UPPER_Y);
+			}
+			
+			if(boss_battle) {
+				// controls LEDs 
+				
+				
+			}
+			
 			if (U) {
+				sprintf(msg, "UP PRESSED \n\r");
+				put_string(msg);
 				U = false;
 				io_expander_read_reg(MCP23017_GPIOB_R);
 			} else if (D) {
@@ -442,12 +584,6 @@ main(void)
 				R = false;
 				io_expander_read_reg(MCP23017_GPIOB_R);
 			}
-			
-			// dragons moving, plus enemies, plus green dragons
-			
-	// 		sprintf(msg,"X: %d\n\r", knight_x);
-    //   put_string(msg);
-			repaint_dragons();
 			
 		}
 }

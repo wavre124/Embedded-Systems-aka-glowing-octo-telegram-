@@ -38,7 +38,6 @@
 #include "eeprom.h"
 #include "validate.h"
 #include "io_expander.h"
-#include "serial_debug.h"
 
 #include "project_interrupts.h"
 #include "project_hardware_init.h"

@@ -34,9 +34,7 @@ static void init_eeprom(void)
 
 static void init_ioexpand_leds(void)
 {
-	// 1 = Pin is configured as an input.
-	// 0 = Pin is configured as an output
-  	// Setting the port A to be output (LEDs)
+	// Setting the port A to be output (LEDs)
 	io_expander_write_reg(MCP23017_IODIRA_R, 0x00);
 	// Turn on the LEDS
 	io_expander_write_reg(MCP23017_GPIOA_R, 0xFF);
@@ -88,7 +86,6 @@ static void init_joystick(void)
 
 static void init_ioexpand_buttons(void)
 {
-	
 	// Setting the port B to be inputs but only GPB0-GPB3
 	io_expander_write_reg(MCP23017_IODIRB_R, 0x0F);	  
 	
@@ -121,7 +118,27 @@ static void init_timer4(void)
     // Set timer to 32 bits
     gp_timer->CFG = TIMER_CFG_32_BIT_TIMER;
 
-	
+    // Clear mode bits for the timer
+    gp_timer->TAMR = 0; 
+			
+    // Set the timer to a periodic and count down timer
+    gp_timer->TAMR |= 0x02;
+    gp_timer->TAMR &= ~TIMER_TAMR_TACDIR;
+    gp_timer->TAILR = 1000000;
+
+    // Enable the interupt for the timer
+    gp_timer->IMR  |= TIMER_IMR_TATOIM;
+
+    // Clear the status bits
+    gp_timer->ICR  |= TIMER_ICR_TATOCINT;
+
+    //Enable the timer
+    gp_timer->CTL  |= TIMER_CTL_TAEN;
+		
+		//gp_timer->RIS |= TIMER_RIS_TATORIS;
+
+    NVIC_SetPriority(TIMER4A_IRQn, 0);
+    NVIC_EnableIRQ(TIMER4A_IRQn);
 }
 
 static void init_timer5(void)
@@ -167,10 +184,10 @@ static void init_timer5(void)
 
 static void init_gpios(void)
 {
-	// init IO_Expander
-	io_expander_init();
 	// initliazes LCD screen for animations
 	lcd_config_screen();
+	io_expander_init();
+	lp_io_init();
 	// this configures the PS2 Joystick GPIO
 	gpio_enable_port(PS2_GPIO_BASE);
 	gpio_config_enable_input(PS2_GPIO_BASE, PS2_X_DIR_MASK);
@@ -179,8 +196,6 @@ static void init_gpios(void)
 	gpio_config_analog_enable(PS2_GPIO_BASE, PS2_Y_DIR_MASK);
 	gpio_config_alternate_function(PS2_GPIO_BASE, PS2_X_DIR_MASK);
 	gpio_config_alternate_function(PS2_GPIO_BASE, PS2_Y_DIR_MASK);	
-
-	
 }
 
 static void init_GPIOF(void)
@@ -197,15 +212,13 @@ static void init_GPIOF(void)
 void initialize_hardware(void)
 {
 	DisableInterrupts();
-	// init IO_Expander
-	io_expander_init();
+	
 	// init GPIOs for some of hardware
 	init_gpios();
-	// init GPIOF
 	init_GPIOF();
 	// init timer hardware
-	init_timer5();
 	init_timer4();
+	init_timer5();
 	// inits 4 pushbuttons on baseboard
 	init_ioexpand_buttons();
 	// inits joystick
@@ -218,8 +231,7 @@ void initialize_hardware(void)
 	init_touch_screen();
 	// inits the EEprom
 	init_eeprom();
-	// init debug 
-	init_serial_debug(true, true);
+	
 	EnableInterrupts();
 }
 

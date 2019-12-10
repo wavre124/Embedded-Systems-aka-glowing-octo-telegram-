@@ -54,6 +54,12 @@ extern const uint8_t back_menu_height;
 extern const uint8_t small_dragon_bitmap[];
 extern const uint8_t small_dragon_width;
 extern const uint8_t small_dragon_height;
+extern const uint8_t fireball_bitmap[];
+extern const uint8_t fireball_width;
+extern const uint8_t fireball_height;
+extern const uint8_t game_over_bitmap[];
+extern const uint8_t game_over_width;
+extern const uint8_t game_over_height;
 
 // This code below is skeleton FONT_INFO struct code from dot factory website
 // This structure describes a single character's display information
