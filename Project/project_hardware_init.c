@@ -204,9 +204,9 @@ static void init_GPIOF(void)
 	gpio_enable_port(IO_EXPANDER_IRQ_GPIO_BASE);
 	gpio_config_digital_enable(IO_EXPANDER_IRQ_GPIO_BASE, IO_EXPANDER_IRQ_PIN_NUM);
 	gpio_config_enable_input(IO_EXPANDER_IRQ_GPIO_BASE, IO_EXPANDER_IRQ_PIN_NUM);
-	gpio_config_falling_edge_irq(IO_EXPANDER_IRQ_GPIO_BASE, IO_EXPANDER_IRQ_PIN_NUM);
-	NVIC_SetPriority(GPIOF_IRQn, 0);
-	NVIC_EnableIRQ(GPIOF_IRQn);
+	gpio_config_falling_edge_irq(IO_EXPANDER_IRQ_GPIO_BASE, IO_EXPANDER_IRQ_PIN_NUM);  // configure the GPIOF to check interrupts on falling edge
+	NVIC_SetPriority(GPIOF_IRQn, 0); // set priority to 0 - highest priority
+	NVIC_EnableIRQ(GPIOF_IRQn);			 // enable interrupts
 }
 
 void initialize_hardware(void)

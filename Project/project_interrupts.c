@@ -129,11 +129,8 @@ void ADC0SS1_Handler(void) // NOT DONE
 void GPIOF_Handler(void){
 	char msg[80];
 	uint8_t data;	
-	io_expander_read_reg(MCP23017_GPIOB_R);
+	io_expander_read_reg(MCP23017_GPIOB_R); // read GPIOB again to double check if the privious interrupt got properly clear
 	data = io_expander_read_reg(MCP23017_INTFB_R);
-	// sprintf(msg,"Inside testing IO_expander push buttons interupt: %d \n\r", data);
-	// put_string(msg);
-	// printf("Inside testing IO_expander push buttons interupt:");
 	if(data == 0){}
 	else if(data == 1){ // up SW0
 		U = true;

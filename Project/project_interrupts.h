@@ -35,12 +35,14 @@ typedef enum {
 extern volatile Directions joy_dir;
 extern volatile bool SW1_Pressed;
 extern volatile bool timer_tick;
+// Boolean value for Joystick direction
 extern volatile bool left;
 extern volatile bool right;
 extern volatile bool up;
 extern volatile bool down;
 extern volatile bool center;
 
+// Boolean value for 4 direction push buttons
 extern volatile bool U;
 extern volatile bool D;
 extern volatile bool L;
