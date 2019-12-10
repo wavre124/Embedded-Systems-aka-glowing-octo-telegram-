@@ -1,1 +1,2 @@
-# FInal-Project-353
+# ECE-353-Final-Project
+ECE 353 Final Project
