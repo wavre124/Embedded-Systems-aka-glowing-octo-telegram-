@@ -43,6 +43,10 @@
 #include "project_hardware_init.h"
 #include "project_bitmaps.h"
 
+#define addrD               80
+#define addrK               160
+#define addrHighscore       240
+
 #define SCREEN_X            240
 #define SCREEN_Y            320
 

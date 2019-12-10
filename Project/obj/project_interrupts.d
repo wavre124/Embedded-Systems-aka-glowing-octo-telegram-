@@ -29,10 +29,6 @@
 .\obj\project_interrupts.o: ..\peripherals\include\eeprom.h
 .\obj\project_interrupts.o: ..\peripherals\include\validate.h
 .\obj\project_interrupts.o: ..\peripherals\include\io_expander.h
-.\obj\project_interrupts.o: ..\peripherals\include\serial_debug.h
-.\obj\project_interrupts.o: ..\drivers\include\pc_buffer.h
-.\obj\project_interrupts.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
-.\obj\project_interrupts.o: ..\drivers\include\uart.h
 .\obj\project_interrupts.o: project_interrupts.h
 .\obj\project_interrupts.o: main.h
 .\obj\project_interrupts.o: project_hardware_init.h

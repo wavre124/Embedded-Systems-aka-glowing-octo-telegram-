@@ -259,6 +259,68 @@ static void clear_dragons(void)
 	
 }
 
+static void write_eeprom_name(void) {
+  uint16_t addr;
+  uint16_t addr1 = addrD;
+  uint16_t addr2 = addrK;
+  uint8_t valuesD[12] = "Dung Viet Vo";
+  uint8_t valuesK[13] = "Kshitij Wavre";
+  uint8_t read_val;
+  char msg[80];
+  bool status = true;
+  
+  sprintf(msg, "write EEPROM\n\r");
+  put_string(msg);
+  for(addr = addr1; addr <(addr1+12); addr++)
+  {
+	  
+      sprintf(msg, "Writing %c\n\r",valuesD[addr-addr1]);
+	  
+  	  put_string(msg);
+      eeprom_byte_write(EEPROM_I2C_BASE,addr, valuesD[addr-addr1]);
+  }
+
+  for(addr = addr2; addr <(addr2+13); addr++)
+  {
+      eeprom_byte_write(EEPROM_I2C_BASE,addr, valuesK[addr-addr2]);
+  }
+
+}
+
+static void read_eeprom_name(void) {
+  uint16_t addr;
+  uint16_t addr1 = addrD;
+  uint16_t addr2 = addrK;
+  uint8_t valuesD[14];
+  uint8_t valuesK[15];
+  uint8_t read_val;
+  char msg[80];
+  bool status = true;
+  
+  sprintf(msg, "read EEPROM\n\r");
+  put_string(msg);
+  for(addr = addr1; addr <(addr1+12); addr++)
+  {
+    eeprom_byte_read(EEPROM_I2C_BASE,addr, &valuesD[addr-addr1]);
+		sprintf(msg, "%c",valuesD[addr-addr1]);
+    put_string(msg);
+  }
+  sprintf(msg, "\nDone 1st read\n\n\r");
+  put_string(msg);
+
+  for(addr = addr2; addr <(addr2+13); addr++)
+  {
+    eeprom_byte_read(EEPROM_I2C_BASE,addr, &valuesK[addr-addr2]);
+		sprintf(msg, "%c",valuesK[addr-addr2]);
+    put_string(msg);
+  }
+	
+	sprintf(msg, "\nDone 2nd read\n\n\r");
+  put_string(msg);
+
+}
+
+
 //*****************************************************************************
 //*****************************************************************************
 int 
@@ -568,7 +630,6 @@ main(void)
 				
 				
 			}
-			
 			if (U) {
 				sprintf(msg, "UP PRESSED \n\r");
 				put_string(msg);
@@ -578,10 +639,12 @@ main(void)
 				D = false;
 				io_expander_read_reg(MCP23017_GPIOB_R);
 			} else if (L) {
+				write_eeprom_name();
 				L = false;
 				io_expander_read_reg(MCP23017_GPIOB_R);
 			} else if (R) {
 				R = false;
+				read_eeprom_name();
 				io_expander_read_reg(MCP23017_GPIOB_R);
 			}
 			
