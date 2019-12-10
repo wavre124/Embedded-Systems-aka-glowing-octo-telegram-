@@ -121,6 +121,14 @@ static void game_over_display(void)
 	// display score
 }
 
+static void you_win_display(void)
+{
+	
+	lcd_clear_screen(LCD_COLOR_BLACK);
+	lcd_draw_image(CENTER_X, you_win_width, CENTER_Y, you_win_height, you_win_bitmap, LCD_COLOR_ORANGE, LCD_COLOR_BLACK);
+	
+}
+
 static void wizard_teleport(int knight_x, int knight_y, int old_x, int old_y, bool shield)
 {
 	if(shield) {
@@ -166,6 +174,11 @@ static void shot_clear(int shot_x, int shot_y)
 static void fire_ball_clear(int ball_x, int ball_y)
 {
 	lcd_draw_rectangle(ball_x, fireball_width, ball_y, fireball_height + 10, LCD_COLOR_WHITE);
+}
+
+static void fire_boss_clear(int ball_x, int ball_y)
+{
+	lcd_draw_rectangle(ball_x, fireball_width, ball_y + 80, fireball_height, LCD_COLOR_WHITE);
 }
 
 static void delay(void)
@@ -241,11 +254,26 @@ static void repaint_dragons(void)
 		if(dragons[i].isHit && (dead_dragons > 3)) {
 			delay();
 			lcd_draw_image(dragons[i].start_x_loc, small_dragon_width, dragons[i].start_y_loc, small_dragon_height, small_dragon_bitmap, LCD_COLOR_RED, LCD_COLOR_WHITE);
+			dragons[i].x_loc = dragons[i].start_x_loc;
+			dragons[i].y_loc = dragons[i].start_y_loc;
 			dragons[i].isHit = false;
 		}
 		
 	}
 	
+}
+
+static void move_dragons(void)
+{
+	int i;
+	
+	for(i = 0; i < 5; i++) {
+		
+		if(!dragons[i].isHit) {
+			lcd_draw_image(dragons[i].x_loc, small_dragon_width, dragons[i].y_loc, small_dragon_height, small_dragon_bitmap, LCD_COLOR_RED, LCD_COLOR_WHITE);
+		}
+	}
+
 }
 
 static void clear_dragons(void)
@@ -322,13 +350,16 @@ static void writeHighScore(uint8_t Highscore) {
       eeprom_byte_write(EEPROM_I2C_BASE,addrHIghScore, Highscore);
 }
 
-static void readHighScore() {
+static uint8_t readHighScore() {
 	uint8_t Highscore;
 	char msg[80];
     eeprom_byte_read(EEPROM_I2C_BASE,addrHIghScore, &Highscore);
 	sprintf(msg, "prev high score = %i \n\r", Highscore);
 	put_string(msg);
+	
+	return Highscore;
 }
+
 //*****************************************************************************
 //*****************************************************************************
 int 
@@ -342,7 +373,6 @@ main(void)
 	uint32_t player_score = 0;
 	// this will use EEPROM
 	uint32_t high_score = 0;
-	uint32_t prev_high_score = 0;
 	int i;
 	int knight_x = CENTER_X;
 	int knight_y = LOWER_Y;
@@ -356,9 +386,14 @@ main(void)
 	int fire_y = 0;
 	int collide_x = 0;
 	int collide_y = 0;
+	int move_dragon_x = 0;
+	int move_dragon_y = 0;
 	int knight_collide_x = 0;
 	int knight_collide_y = 0;
 	int dragon_tick = 0;
+	int boss_health = 8;
+	int boss_x = CENTER_X;
+	int boss_y = UPPER_Y;
 	bool isUpPressed = false;
 	bool move = false;
 	bool red_dead = false;
@@ -371,6 +406,7 @@ main(void)
 	bool in_menu = false;
 	bool high_score_bool = false;
 	bool boss_battle = false;
+	bool boss_attack = false;
 	char msg[80];
 	
 	init_dragons();
@@ -379,7 +415,7 @@ main(void)
 	
 	initialize_serial_debug();
 	initialize_hardware();
-	writeHighScore(100);
+	
 	lcd_init_menu();
 	
 	while(in_menu) {
@@ -454,9 +490,8 @@ main(void)
 				// loop through array of dragons and see if hit
 					for(i = 0; i < 5; i++) {
 					
-					
-						red_dragon_x = dragons[i].start_x_loc;
-						red_dragon_y = dragons[i].start_y_loc;
+						red_dragon_x = dragons[i].x_loc;
+						red_dragon_y = dragons[i].y_loc;
 					
 						
 						collide_x = abs(shot_x - red_dragon_x);
@@ -477,8 +512,21 @@ main(void)
 					
 					}
 				} else {
-					sprintf(msg, "IN BOSS BATTLE \n\r");
-					put_string(msg);
+					
+					red_dragon_x = CENTER_X;
+					red_dragon_y = UPPER_Y;
+					
+					collide_x = abs(shot_x - red_dragon_x);
+					collide_y = abs(shot_y - red_dragon_y);
+					
+					if(((collide_x < 60) && (collide_y < 60))) {
+						shot_clear(shot_x, shot_y);
+						lcd_boss_battle(boss_x, boss_y);
+						wizard_shot = false;
+						player_score += 1;
+						boss_health -= 1;
+					}
+					
 				}
 				
 			}
@@ -496,11 +544,16 @@ main(void)
 				knight_collide_y = abs(fire_y - knight_y);
 				
 				if(((knight_collide_x < 20) && (knight_collide_y < 20)) && !shield_raised) {
-					//fire_ball_clear(fire_x, fire_y);
-					// display game over
 					delay();
 					game_over_display();
 					fire_ball = false;
+					
+					if(readHighScore() < player_score) {
+						writeHighScore(player_score);
+					} else if(readHighScore() == 255) {
+						writeHighScore(player_score);
+					}
+					
 					break;
 				}
 				
@@ -509,8 +562,51 @@ main(void)
 					fire_ball = false;
 				} 
 				
+			}
+			
+			if(boss_attack) {
+				fire_y += 1;
+				draw_fire_ball(fire_x, fire_y + 50);
+				
+				if(fire_y > 250) {
+					fire_boss_clear(fire_x, fire_y);
+					boss_attack = false;
+				}
+				
+				knight_collide_x = abs(fire_x - knight_x);
+				knight_collide_y = abs(fire_y - knight_y);
+				
+				if(((knight_collide_x < 20) && (knight_collide_y < 20)) && !shield_raised) {
+					delay();
+					game_over_display();
+					boss_attack = false;
+					
+					if(readHighScore() < player_score) {
+						writeHighScore(player_score);
+					} else if(readHighScore() == 255) {
+						writeHighScore(player_score);
+					}
+					
+					break;
+				}
+				
+				if(((knight_collide_x < 90) && (knight_collide_y < 90)) && shield_raised) {
+					sprintf(msg, "X Diff: %d \n\r", knight_collide_x);
+					put_string(msg);
+					sprintf(msg, "Y Diff: %d \n\r", knight_collide_y);
+					put_string(msg);
+					fire_boss_clear(fire_x, fire_y - 50);
+					boss_attack = false;
+				} 
 				
 				
+			}
+			
+			if(boss_battle && boss_fire) {
+				fire_x = boss_x;
+				fire_y = boss_y;
+				boss_fire = false;
+				boss_attack = true;
 			}
 			
 			if(touch_event) {
@@ -617,46 +713,102 @@ main(void)
 				if(dragon_tick == 5) {
 					dragon_tick = 0;
 				}
+				
+			}
+			
+			if(mv_dragons && !boss_battle) {
+				
+				// move dragons
+				for(i = 0; i < 5; i++) {
+					
+					dragons[i].y_loc += 1;
+					
+				}
+				
+				move_dragons();
+				
 			}
 			
 			if(!boss_battle) {
 				repaint_dragons();
 			}
-				
-			//sprintf(msg, "SCORE: %d\n\r", player_score);
-			//put_string(msg);
-			
+						
 			if((player_score > 5) && !boss_battle) {
 				boss_battle = true;
 				// get LCD ready for boss
 				clear_dragons();
 				// draw boss
-				lcd_boss_battle(CENTER_X, UPPER_Y);
+				lcd_boss_battle(boss_x, boss_y);
 			}
 			
 			if(boss_battle) {
 				// controls LEDs 
+				//io_expander_write_reg(MCP23017_GPIOA_R, 0xFF);
+				switch(boss_health) {
+					case 8:
+						io_expander_write_reg(MCP23017_GPIOA_R, 0xFF);
+						break;
+					case 7:
+						io_expander_write_reg(MCP23017_GPIOA_R, 0x7F);
+						break;
+					case 6:
+						io_expander_write_reg(MCP23017_GPIOA_R, 0x3F);
+						break;
+					case 5:
+						io_expander_write_reg(MCP23017_GPIOA_R, 0x1F);
+						break;
+					case 4:
+						io_expander_write_reg(MCP23017_GPIOA_R, 0x0F);
+						break;
+					case 3:
+						io_expander_write_reg(MCP23017_GPIOA_R, 0x07);
+						break;
+					case 2:
+						io_expander_write_reg(MCP23017_GPIOA_R, 0x03);
+						break;
+					case 1:
+						io_expander_write_reg(MCP23017_GPIOA_R, 0x01);
+						break;
+					case 0:
+						io_expander_write_reg(MCP23017_GPIOA_R, 0x00);
+						break;
+					default:
+						io_expander_write_reg(MCP23017_GPIOA_R, 0x00);
+						break;
+				}
 				
+				if(boss_health == 0) {
+					//display you win!
+					you_win_display();
+					
+					if(readHighScore() < player_score) {
+						writeHighScore(player_score);
+					} else if(readHighScore() == 255) {
+						writeHighScore(player_score);
+					}
+					
+					break;
+				}
 				
 			}
-
+			
 			if (U) {
-				sprintf(msg, "UP PRESSED \n\r");
-				put_string(msg);
-				U = false;
-				io_expander_read_reg(MCP23017_GPIOB_R);
+					sprintf(msg, "UP PRESSED \n\r");
+					put_string(msg);
+					U = false;
+					io_expander_read_reg(MCP23017_GPIOB_R);
 			} else if (D) {
-				D = false;
-				readHighScore();
-				io_expander_read_reg(MCP23017_GPIOB_R);
+					D = false;
+					readHighScore();
+					io_expander_read_reg(MCP23017_GPIOB_R);
 			} else if (L) {
-				write_eeprom_name();
-				L = false;
-				io_expander_read_reg(MCP23017_GPIOB_R);
+					write_eeprom_name();
+					L = false;
+					io_expander_read_reg(MCP23017_GPIOB_R);
 			} else if (R) {
-				R = false;
-				read_eeprom_name();
-				io_expander_read_reg(MCP23017_GPIOB_R);
+					R = false;
+					read_eeprom_name();
+					io_expander_read_reg(MCP23017_GPIOB_R);
 			}
 			
 		}

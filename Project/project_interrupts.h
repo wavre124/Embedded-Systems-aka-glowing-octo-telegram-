@@ -36,6 +36,8 @@ extern volatile Directions joy_dir;
 extern volatile bool SW1_Pressed;
 extern volatile bool timer_tick;
 // Boolean value for Joystick direction
+extern volatile bool mv_dragons;
+extern volatile bool boss_fire;
 extern volatile bool left;
 extern volatile bool right;
 extern volatile bool up;
